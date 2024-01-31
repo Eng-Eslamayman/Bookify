@@ -46,5 +46,33 @@
                 <!--end::Content-->
             </div>
         }
+        else
+        {
+			<div class="table-responsive">
+				<table class="table table-row-bordered gy-7">
+					<thead>
+						<tr class="fw-bold fs-6 text-gray-800">
+							<th>Name</th>
+							<th>Status</th>
+							<th>Created On</th>
+							<th>Last Updated On</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var category in Model)
+                        {
+                            <tr>
+                                <td>@category.Name</td>
+                                <td>@category.IsDeleted</td>
+                                <td>@category.CreatedOn</td>
+                                <td>@category.LastUpdatedOn</td>
+                                <td></td>
+                            </tr>
+                        }
+					</tbody>
+				</table>
+			</div>
+        }
     </div>
 </div>
