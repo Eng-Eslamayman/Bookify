@@ -21,7 +21,8 @@
             Categories
         </h3>
         <div class="card-toolbar">
-            <a asp-action="Create" asp-controller="Categories" class="btn btn-sm btn-primary">
+            <a href="javascript:;" class="btn btn-sm btn-primary js-render-modal"
+            data-title="Add Category" data-url="/Categories/Create">
                 <i class="bi bi-plus-circle-dotted"></i>
                 Add
             </a>
@@ -48,37 +49,76 @@
         }
         else
         {
-			<div class="table-responsive">
-				<table class="table table-row-bordered gy-7">
-					<thead>
-						<tr class="fw-bold fs-6 text-gray-800">
-							<th>Name</th>
-							<th>Status</th>
-							<th>Created On</th>
-							<th>Last Updated On</th>
-							<th>Action</th>
-						</tr>
-					</thead>
-					<tbody>
-						@foreach (var category in Model)
+            <div class="table-responsive">
+                <table class="table table-row-bordered gy-7">
+                    <thead>
+                        <tr class="fw-bold fs-6 text-gray-800">
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Created On</th>
+                            <th>Last Updated On</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var category in Model)
                         {
-                            <tr>
-                                <td>@category.Name</td>
-                                <td>
-                                    <span class="badge badge-light-@(category.IsDeleted ? "danger" : "success")">
-                                        @(category.IsDeleted ? "Deleted" : "Available")
-                                    </span>
-                                </td>
-                                <td>@category.CreatedOn</td>
-                                <td>@category.LastUpdatedOn</td>
-                                <td>
-                                    <a class="btn btn-outline btn-sm btn-outline-dashed btn-outline-primary btn-active-light-primary" asp-action="Edit" asp-controller="Categories" asp-route-id="@category.Id">Edit</a>
-                                </td>
-                            </tr>
+                            <partial name="_CategoryRow" model="@category"/>
                         }
-					</tbody>
-				</table>
-			</div>
+                    </tbody>
+                </table>
+            </div>
         }
     </div>
 </div>
+
+@Html.AntiForgeryToken()
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            $('body').delegate('.js-toggle-status','click', function () {
+                var btn = $(this);
+
+                bootbox.confirm({
+                    message: 'Are you sure that you need to toggle item status?',
+                    buttons: {
+                        confirm: {
+                            label: 'Yes',
+                            className: 'btn-danger'
+                        },
+                        cancel: {
+                            label: 'No',
+                            className: 'btn-secondary'
+                        }
+                    },
+                    callback: function (result) {
+                        if(result)
+                        {
+                            $.post({
+                                url: '/Categories/ToggleStatus/' + btn.data('id'),
+                                data: {
+                                    '__RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                                },
+                                success: function (LastUpdatedOn) {
+                                    var row = btn.parents('tr');
+                                    var status = row.find('.js-status');
+                                    var newStatus = status.text().trim() === 'Deleted' ? 'Available' : 'Deleted';
+                                    status.text(newStatus).toggleClass('badge-light-danger badge-light-success');
+                                    row.find('.js-updated-on').html(LastUpdatedOn);
+                                    row.addClass('animate__animated animate__flash');
+
+                                    ShowSuccessMessage();
+
+                                },
+                                Error: function(){
+                                    ShowErrorMessage();
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+}
