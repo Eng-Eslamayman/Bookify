@@ -1,11 +1,11 @@
 ﻿var updatedRow;
 var table;
 var datatable;
-var exportedCols;
-function ShowSuccessMessage(message = "Saved successfully") {
+var exportedCols = [];
+function ShowSuccessMessage(message = "Saved successfully!") {
     Swal.fire({
         icon: "success",
-        title: "success",
+        title: "Good Job",
         text: message,
         customClass: {
             confirmButton: "btn btn-primary"
@@ -13,11 +13,14 @@ function ShowSuccessMessage(message = "Saved successfully") {
     });
 }
 
+function onModalBegin() {
+    $('body:submit').attr('disabled', 'disabled').attr('data-kt-indicator','on');
+}
 function onModalSuccess(row) {
     ShowSuccessMessage();
     $('#Modal').modal('hide');
     if (updatedRow !== undefined) {
-        datatable.row(updatedRow).draw();
+        datatable.row(updatedRow).remove().draw();
         updatedRow = undefined;
     }
 
@@ -25,7 +28,7 @@ function onModalSuccess(row) {
     datatable.row.add(newRow).draw();
 
     KTMenu.init();
-    KTMenu.initHandlers();
+    KTMenu.initGlobalHandlers();
 }
 
 function ShowErrorMessage(message = "Something went wrong!") {
@@ -36,12 +39,16 @@ function ShowErrorMessage(message = "Something went wrong!") {
     });
 }
 
+function onModalComplete() {
+    $('body:submit').removeAttr('disabled').removeAttr('data-kt-indicator');
+}
+
 //DataTables
 var headers = $('th');
-$.each(headers, function () {
+$.each(headers, function (i) {
     if (!$(this).hasClass('js-no-export'))
         exportedCols.push(i);
-})
+});
 
 var KTDatatables = function () {
     // Private functions
@@ -49,7 +56,6 @@ var KTDatatables = function () {
         // Init datatable --- more info on datatables: https://datatables.net/manual/
         datatable = $(table).DataTable({
             "info": false,
-            'order': [],
             'pageLength': 10,
         });
     }
@@ -62,28 +68,28 @@ var KTDatatables = function () {
                 {
                     extend: 'copyHtml5',
                     title: documentTitle,
-                    exportOption: {
+                    exportOptions: {
                         columns: exportedCols
                     }
                 },
                 {
                     extend: 'excelHtml5',
                     title: documentTitle,
-                    exportOption: {
+                    exportOptions: {
                         columns: exportedCols
                     }
                 },
                 {
                     extend: 'csvHtml5',
                     title: documentTitle,
-                    exportOption: {
+                    exportOptions: {
                         columns: exportedCols
                     }
                 },
                 {
                     extend: 'pdfHtml5',
                     title: documentTitle,
-                    exportOption: {
+                    exportOptions: {
                         columns: exportedCols
                     }
                 }
@@ -131,37 +137,80 @@ var KTDatatables = function () {
 }();
 
 $(document).ready(function () {
-        //sweetalert
-        var message = $('#Message').text();
-        if (message !== '') {
-            ShowSuccessMessage();
+    //sweetalert
+    var message = $('#Message').text();
+    if (message !== '') {
+        ShowSuccessMessage();
+    }
+
+    //datatables 
+    KTUtil.onDOMContentLoaded(function () {
+        KTDatatables.init();
+    });
+
+    $('body').delegate('.js-render-modal', 'click', function () {
+        var btn = $(this);
+        var modal = $('#Modal');
+        modal.find('#ModalLabel').text(btn.data('title'));
+
+        if (btn.data('update') !== undefined) {
+            updatedRow = btn.parents('tr');
+
         }
-
-        //datatables 
-        KTUtil.onDOMContentLoaded(function () {
-            KTDatatables.init();
-        });
-
-        $('body').delegate('.js-render-modal','click', function () {
-            var btn = $(this);
-            var modal = $('#Modal');
-            modal.find('#ModalLabel').text(btn.data('title'));
-
-            if (btn.data('update') !== undefined) {
-                updatedRow = btn.parents('tr');
-
+        $.get({
+            url: btn.data('url'),
+            success: function (form) {
+                modal.find('.modal-body').html(form);
+                $.validator.unobtrusive.parse(modal);
+            },
+            error: function () {
+                ShowErrorMessage();
             }
-            $.get({
-                url: btn.data('url'),
-                success: function (form) {
-                    modal.find('.modal-body').html(form);
-                    $.validator.unobtrusive.parse(modal);
-                },
-                error: function () {
-                    ShowErrorMessage();
-                }
 
-            });
-            modal.modal('show');
+        });
+        modal.modal('show');
+    });
+
+    //Handle toggle status 
+    $('body').delegate('.js-toggle-status', 'click', function () {
+        var btn = $(this);
+
+        bootbox.confirm({
+            message: 'Are you sure that you need to toggle item status?',
+            buttons: {
+                confirm: {
+                    label: 'Yes',
+                    className: 'btn-danger'
+                },
+                cancel: {
+                    label: 'No',
+                    className: 'btn-secondary'
+                }
+            },
+            callback: function (result) {
+                if (result) {
+                    $.post({
+                        url: btn.data('url'),
+                        data: {
+                            '__RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function (LastUpdatedOn) {
+                            var row = btn.parents('tr');
+                            var status = row.find('.js-status');
+                            var newStatus = status.text().trim() === 'Deleted' ? 'Available' : 'Deleted';
+                            status.text(newStatus).toggleClass('badge-light-danger badge-light-success');
+                            row.find('.js-updated-on').html(LastUpdatedOn);
+                            row.addClass('animate__animated animate__flash');
+
+                            ShowSuccessMessage();
+
+                        },
+                        Error: function () {
+                            ShowErrorMessage();
+                        }
+                    });
+                }
+            }
         });
     });
+});
