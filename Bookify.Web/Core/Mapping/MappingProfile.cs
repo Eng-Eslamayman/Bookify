@@ -1,15 +1,16 @@
-﻿using AutoMapper;
-using Bookify.Web.Core.Models;
-using Bookify.Web.Core.ViewModels;
-
-namespace Bookify.Web.Core.Mapping
+﻿namespace Bookify.Web.Core.Mapping
 {
-    public class MappingProfile: Profile
+    public class MappingProfile : Profile
     {
         public MappingProfile()
         {
-             CreateMap<Category,CategoryViewModel>();
-            CreateMap<CategoryFormViewModel,Category>().ReverseMap();
+            //Category
+            CreateMap<Category, CategoryViewModel>();
+            CreateMap<CategoryFormViewModel, Category>().ReverseMap();
+
+            //Author
+            CreateMap<Author, AuthorViewModel>();
+            CreateMap<AuthorFormViewModel, Author>().ReverseMap();
         }
     }
 }

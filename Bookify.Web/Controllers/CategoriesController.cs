@@ -37,7 +37,7 @@
 
             var viewModel = _mapper.Map<CategoryViewModel>(category);
 
-            return PartialView("_CategoryRow",viewModel);
+            return PartialView("_CategoryRow", viewModel);
         }
         [AjaxOnly]
         public IActionResult Edit(int id)
@@ -51,7 +51,7 @@
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id ,CategoryFormViewModel model)
+        public IActionResult Edit(int id, CategoryFormViewModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest();
@@ -85,7 +85,7 @@
         public IActionResult AllowItem(CategoryFormViewModel model)
         {
             var category = _Context.Categories.SingleOrDefault(c => c.Name == model.Name);
-            var isAllowed = category is null || category.Id == model.Id; 
+            var isAllowed = category is null || category.Id == model.Id;
             return Json(isAllowed);
         }
     }

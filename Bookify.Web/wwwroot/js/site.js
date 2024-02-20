@@ -28,7 +28,7 @@ function onModalSuccess(row) {
     datatable.row.add(newRow).draw();
 
     KTMenu.init();
-    KTMenu.initGlobalHandlers();
+    KTMenu.initHandlers();
 }
 
 function ShowErrorMessage(message = "Something went wrong!") {
