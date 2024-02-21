@@ -21,3 +21,8 @@ body {
   margin-bottom: 60px;
 }
 
+.form-floating > .form-control:not(:placeholder-shown) {
+    padding-top: 2.15rem;
+    padding-bottom: 0.225rem;
+}
+
