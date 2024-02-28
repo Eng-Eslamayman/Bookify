@@ -6,3 +6,5 @@ global using Bookify.Web.Filters;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
 global using System.ComponentModel.DataAnnotations;
+global using Bookify.Web.Settings;
+

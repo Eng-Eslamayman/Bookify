@@ -13,8 +13,12 @@ function ShowSuccessMessage(message = "Saved successfully!") {
     });
 }
 
+function disableSubmitButton() {
+    $('body:submit').attr('disabled', 'disabled').attr('data-kt-indicator', 'on');
+
+}
 function onModalBegin() {
-    $('body:submit').attr('disabled', 'disabled').attr('data-kt-indicator','on');
+    disableSubmitButton();
 }
 function onModalSuccess(row) {
     ShowSuccessMessage();
@@ -137,15 +141,32 @@ var KTDatatables = function () {
 }();
 
 $(document).ready(function () {
+    //Disable Submit Button 
+    $('form').on('submit', function () {
+        if ($('.js-tinymce').length > 0) {
+            $('.js-tinymce').each(function () {
+                var input = $(this);
+
+                var content = tinyMCE.get(input.attr('id')).getContent();
+                input.val(content);
+            });
+        }
+
+        var isValid = $(this).valid();
+        if (isValid)
+            disableSubmitButton();
+    });
+
     //TinyMCE
-    var options = { selector: ".js-tinymce", height: "425" };
+    if ($('.js-tinymce').length > 0) {
+        var options = { selector: ".js-tinymce", height: "442" };
 
-    if (KTThemeMode.getMode() === "dark") {
-        options["skin"] = "oxide-dark";
-        options["content_css"] = "dark";
+        if (KTThemeMode.getMode() === "dark") {
+            options["skin"] = "oxide-dark";
+            options["content_css"] = "dark";
+        }
+        tinymce.init(options);
     }
-
-    tinymce.init(options);
 
     //datePicker
     $('.js-datepicker').daterangepicker({
@@ -154,8 +175,12 @@ $(document).ready(function () {
         drops: 'up',
         maxDate: new Date()
     });
+
     //Select2
     $('.js-select2').select2();
+    $('.js-select2').on('select2:select', function () {
+        $('form').validate().element('#' + $(this).attr('id')); 
+    });
 
     //sweetalert
     var message = $('#Message').text();

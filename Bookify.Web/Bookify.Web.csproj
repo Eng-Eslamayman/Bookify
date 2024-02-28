@@ -4,21 +4,23 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>aspnet-Bookify.Web-d66c28b6-5f59-46c1-838a-b93d15e37622</UserSecretsId>
+    <UserSecretsId>d66c28b6-5f59-46c1-838a-b93d15e37622</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+    <PackageReference Include="CloudinaryDotNet" Version="1.25.1" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="7.0.12" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.12" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="7.0.12" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.12" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.12" />
+    <PackageReference Include="SixLabors.ImageSharp.Web" Version="3.1.0" />
     <PackageReference Include="UoN.ExpressiveAnnotations.NetCore" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\Images\Books\" />
+    <Folder Include="wwwroot\images\books\thumb\" />
   </ItemGroup>
 
 </Project>

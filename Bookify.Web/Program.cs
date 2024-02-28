@@ -17,6 +17,8 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(MappingProfile)));
 builder.Services.AddExpressiveAnnotations();
+
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection(nameof(CloudinarySettings)));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
