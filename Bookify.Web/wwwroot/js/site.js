@@ -58,9 +58,13 @@ var KTDatatables = function () {
     // Private functions
     var initDatatable = function () {
         // Init datatable --- more info on datatables: https://datatables.net/manual/
+
         datatable = $(table).DataTable({
             "info": false,
             'pageLength': 10,
+            'drawCallback': function () {
+                KTMenu.createInstances();
+            }
         });
     }
 

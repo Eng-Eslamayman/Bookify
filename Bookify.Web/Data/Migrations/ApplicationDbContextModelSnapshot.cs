@@ -78,7 +78,7 @@ namespace Bookify.Web.Data.Migrations
                     b.Property<string>("ImagePublicId")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ImageThumbailUrl")
+                    b.Property<string>("ImageThumbnailUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ImageUrl")

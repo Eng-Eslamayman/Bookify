@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SixLabors.ImageSharp.Processing;
+using System.Linq.Dynamic.Core;
 
 namespace Bookify.Web.Controllers
 {
@@ -39,7 +40,50 @@ namespace Bookify.Web.Controllers
         public IActionResult Index()
         {
            return View();
-        } 
+        }
+
+        [HttpPost]
+        public IActionResult GetBooks()
+        {
+            var skip = int.Parse(Request.Form["start"]!);
+            var pageSize = int.Parse(Request.Form["length"]!);
+
+            var searchValue = Request.Form["search[value]"];
+            var sortColumnIndex = Request.Form["order[0][column]"];
+            var sortColumn = Request.Form[$"columns[{sortColumnIndex}][name]"];
+            var sortColumnDirection = Request.Form["order[0][dir]"];
+
+            IQueryable<Book> books = _context.Books
+                .Include(b => b.Author)
+                .Include(b => b.Categories)
+                .ThenInclude(c => c.Category);
+
+            if(!string.IsNullOrEmpty(searchValue))
+                books = books.Where(b => b.Title.Contains(searchValue) ||  b.Author!.Name.Contains(searchValue));
+
+            books = books.OrderBy($"{sortColumn} {sortColumnDirection}");
+            var data = books.Skip(skip).Take(pageSize).ToList();
+
+            var mappedData = _mapper.Map<IEnumerable<BookViewModel>>(data);
+
+            var recordsTotal = books.Count();
+            var jsonData = new { recordsFilters = recordsTotal, recordsTotal, data = mappedData };
+            return Ok(jsonData);
+        }
+        public IActionResult Details(int id)
+        {
+            var book = _context.Books
+                .Include(a => a.Author)
+                .Include(b => b.Categories)
+                .ThenInclude(c => c.Category)
+                .SingleOrDefault(b => b.Id == id);
+
+            if (book is null)
+                return NotFound();
+            var viewModel = _mapper.Map<BookViewModel>(book);
+
+            return View(viewModel);
+        }
         public IActionResult Create()
         {
             return View("Form", PopulateViewModel());
@@ -77,7 +121,7 @@ namespace Bookify.Web.Controllers
 
                 stream.Dispose();  
                 book.ImageUrl = $"/images/books/{imageName}";
-                book.ImageThumbailUrl = $"/images/books/thumb/{imageName}";
+                book.ImageThumbnailUrl = $"/images/books/thumb/{imageName}";
 
                 using var image = Image.Load(model.Image.OpenReadStream());
                 var ratio = (float)image.Width / 200;
@@ -85,7 +129,7 @@ namespace Bookify.Web.Controllers
                 image.Mutate(i => i.Resize(200, (int)height));
 
                 image.Save(thumbPath);
-
+                #region save image in cloud
                 //using var stream = model.Image.OpenReadStream();
 
                 //var imageParams = new ImageUploadParams
@@ -98,13 +142,14 @@ namespace Bookify.Web.Controllers
                 //book.ImageUrl = result.SecureUri.ToString();
                 //book.ImageThumbailUrl = GetThumbailUrl(book.ImageUrl);
                 //book.ImagePublicId = result.PublicId;
+                #endregion
             }
             foreach (var category in model.SelectedCategories)
                 book.Categories.Add(new BookCategory { CategoryId = category });
                   
             _context.Books.Add(book);
             _context.SaveChanges();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Details),new { id = book.Id });
         }
         public IActionResult AllowItem(BookFormViewModel model)
         {
@@ -144,7 +189,7 @@ namespace Bookify.Web.Controllers
                 if(!string.IsNullOrEmpty(book.ImageUrl))
                 {
                     var oldPath = $"{_environment.WebRootPath}{book.ImageUrl}";
-                    var oldThumbPath = $"{_environment.WebRootPath}{book.ImageThumbailUrl}";
+                    var oldThumbPath = $"{_environment.WebRootPath}{book.ImageThumbnailUrl}";
 
                     if (System.IO.File.Exists(oldPath))
                         System.IO.File.Delete(oldPath);
@@ -174,7 +219,7 @@ namespace Bookify.Web.Controllers
                 stream.Dispose();
 
                 model.ImageUrl = $"/images/books/{imageName}";
-                model.ImageThumbailUrl = $"/images/books/thumb/{imageName}";
+                model.ImageThumbnailUrl = $"/images/books/thumb/{imageName}";
 
                 using var image = Image.Load(model.Image.OpenReadStream());
                 var ratio = (float)image.Width / 200;
@@ -182,6 +227,7 @@ namespace Bookify.Web.Controllers
                 image.Mutate(i => i.Resize(200, (int)height));
 
                 image.Save(thumbPath);
+                #region edit image in cloud
                 //using var stream = model.Image.OpenReadStream();
 
                 //var imageParams = new ImageUploadParams
@@ -194,10 +240,14 @@ namespace Bookify.Web.Controllers
                 //book.ImageUrl = result.SecureUri.ToString();
 
                 //imagePublicId = result.PublicId;
+                #endregion 
             }
-           
+
             else if(!string.IsNullOrEmpty(book.ImageUrl))
+            {
                 model.ImageUrl = book.ImageUrl;
+                model.ImageThumbnailUrl = book.ImageThumbnailUrl;
+            }
             book = _mapper.Map(model, book);
             book.LastUpdatedOn = DateTime.Now;
             //book.ImageThumbailUrl = GetThumbailUrl(book.ImageUrl);
@@ -207,9 +257,24 @@ namespace Bookify.Web.Controllers
                 book.Categories.Add(new BookCategory { CategoryId = category });
 
             _context.SaveChanges();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Details),new { id = book.Id});
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ToggleStatus(int id)
+        {
+            var book = _context.Books.Find(id);
 
+            if (book is null)
+                return NotFound();
+
+            book.IsDeleted = !book.IsDeleted;
+            book.LastUpdatedOn = DateTime.Now;
+
+            _context.SaveChanges();
+
+            return Ok();
+        }
         private BookFormViewModel PopulateViewModel(BookFormViewModel? model = null)
         {
             BookFormViewModel viewModel = model is null ? new BookFormViewModel() : model;

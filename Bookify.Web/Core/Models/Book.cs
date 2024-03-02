@@ -12,7 +12,7 @@
         public string Publisher { get; set; } = null!;
         public DateTime PublishingDate { get; set; }
         public string? ImageUrl { get; set; }
-        public string? ImageThumbailUrl { get; set; }
+        public string? ImageThumbnailUrl { get; set; }
         public string? ImagePublicId { get; set; }
         [MaxLength(200)]
         public string Hall { get; set; } = null!;
