@@ -15,5 +15,6 @@
         public bool IsDeleted { get; set; }
         public DateTime CreatedOn { get; set; } = DateTime.Now;
         public IEnumerable<string> Categories { get; set; } = null!;
+        public IEnumerable<BookCopyViewModel> Copies { get; set; } = null!;
     }
 }
