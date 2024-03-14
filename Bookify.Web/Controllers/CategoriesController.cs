@@ -1,5 +1,8 @@
-﻿namespace Bookify.Web.Controllers
+﻿using Bookify.Web.Core.Models;
+
+namespace Bookify.Web.Controllers
 {
+    [Authorize(Roles = AppRoles.Archive)]
     public class CategoriesController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -32,6 +35,8 @@
 
 
             var category = _mapper.Map<Category>(model);
+            category.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+
             _context.Categories.Add(category);
             _context.SaveChanges();
 
@@ -59,6 +64,7 @@
             var category = _context.Categories.Find(id);
 
             category = _mapper.Map(model, category);
+            category.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
             category.LastUpdatedOn = DateTime.Now;
 
             _context.SaveChanges();
@@ -76,6 +82,7 @@
                 return NotFound();
 
             category.IsDeleted = !category.IsDeleted;
+            category.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
             category.LastUpdatedOn = DateTime.Now;
 
             _context.SaveChanges();

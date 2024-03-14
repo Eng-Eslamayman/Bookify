@@ -1,16 +1,11 @@
-﻿using Bookify.Web.Core.Consts;
-using Bookify.Web.Core.Models;
-using CloudinaryDotNet;
-using CloudinaryDotNet.Actions;
-using Microsoft.AspNetCore.Mvc;
+﻿using CloudinaryDotNet;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using SixLabors.ImageSharp.Processing;
 using System.Linq.Dynamic.Core;
 
 namespace Bookify.Web.Controllers
 {
+    [Authorize(Roles = AppRoles.Archive)]
     public class BooksController : Controller
     {
         readonly ApplicationDbContext _context;
@@ -144,6 +139,8 @@ namespace Bookify.Web.Controllers
                 //book.ImageThumbailUrl = GetThumbailUrl(book.ImageUrl);
                 //book.ImagePublicId = result.PublicId;
                 #endregion
+                book.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+
             }
             foreach (var category in model.SelectedCategories)
                 book.Categories.Add(new BookCategory { CategoryId = category });
@@ -180,7 +177,10 @@ namespace Bookify.Web.Controllers
             if (!ModelState.IsValid)
                 return View("Form", PopulateViewModel(model));
 
-            var book = _context.Books.Include(c => c.Categories).SingleOrDefault(b => b.Id == model.Id);
+            var book = _context.Books
+                .Include(b => b.Copies)
+                .Include(c => c.Categories)
+                .SingleOrDefault(b => b.Id == model.Id);
             if (book is null)
                 return NotFound();
 
@@ -250,12 +250,18 @@ namespace Bookify.Web.Controllers
                 model.ImageThumbnailUrl = book.ImageThumbnailUrl;
             }
             book = _mapper.Map(model, book);
+            book.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+
             book.LastUpdatedOn = DateTime.Now;
             //book.ImageThumbailUrl = GetThumbailUrl(book.ImageUrl);
             //book.ImagePublicId = imagePublicId;
 
             foreach (var category in model.SelectedCategories)
                 book.Categories.Add(new BookCategory { CategoryId = category });
+
+            if(!model.IsAvailableForRental)
+                foreach (var copy in book.Copies)
+                    copy.IsAvailableForRental = false;
 
             _context.SaveChanges();
             return RedirectToAction(nameof(Details),new { id = book.Id});

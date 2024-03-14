@@ -39,12 +39,19 @@ function ShowErrorMessage(message = "Something went wrong!") {
     Swal.fire({
         icon: "error",
         title: "Oops...",
-        text: message,
+        text: message.responseText !== undefined ? message.responseText : message,
     });
 }
 
 function onModalComplete() {
     $('body:submit').removeAttr('disabled').removeAttr('data-kt-indicator');
+}
+
+function applySelect2() {
+    $('.js-select2').select2();
+    $('.js-select2').on('select2:select', function () {
+        $('form').not('#SignOut').validate().element('#' + $(this).attr('id'));
+    });
 }
 
 //DataTables
@@ -146,7 +153,7 @@ var KTDatatables = function () {
 
 $(document).ready(function () {
     //Disable Submit Button 
-    $('form').on('submit', function () {
+    $('form').not('#SignOut').on('submit', function () {
         if ($('.js-tinymce').length > 0) {
             $('.js-tinymce').each(function () {
                 var input = $(this);
@@ -181,10 +188,7 @@ $(document).ready(function () {
     });
 
     //Select2
-    $('.js-select2').select2();
-    $('.js-select2').on('select2:select', function () {
-        $('form').validate().element('#' + $(this).attr('id')); 
-    });
+    applySelect2();
 
     //sweetalert
     var message = $('#Message').text();
@@ -211,6 +215,7 @@ $(document).ready(function () {
             success: function (form) {
                 modal.find('.modal-body').html(form);
                 $.validator.unobtrusive.parse(modal);
+                applySelect2();
             },
             error: function () {
                 ShowErrorMessage();
@@ -261,5 +266,9 @@ $(document).ready(function () {
                 }
             }
         });
+    });
+
+    $('.js-signout').on('click', function () {
+        $('#SignOut').submit();
     });
 });
