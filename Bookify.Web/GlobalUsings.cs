@@ -10,6 +10,8 @@ global using Bookify.Web.Settings;
 global using Bookify.Web.Core.Consts;
 global using Microsoft.AspNetCore.Authorization;
 global using System.Security.Claims;
+global using Bookify.Web.Helpers;
+global using Bookify.Web.Services;
 
 
 
