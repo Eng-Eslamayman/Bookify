@@ -75,7 +75,7 @@ namespace Bookify.Web.Areas.Identity.Pages.Account
 					protocol: Request.Scheme);
 
 				var body = _emailBodyBuilder.GetEmailBody(
-				"https://res.cloudinary.com/eslamayman741/image/upload/v1710854694/icon-positive-vote-2_jcxdww_lrrwni.svg",
+                "https://res.cloudinary.com/eslamayman741/image/upload/v1711053699/icon-positive-vote-2_sgatwf_eocxqo.png",
 						$"Hey {user.FullName},",
 						"please click the below button to reset you password",
 						$"{HtmlEncoder.Default.Encode(callbackUrl!)}",

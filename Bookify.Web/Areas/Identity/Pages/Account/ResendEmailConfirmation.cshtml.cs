@@ -91,7 +91,7 @@ namespace Bookify.Web.Areas.Identity.Pages.Account
 			protocol: Request.Scheme);
 
 			var body = _emailBodyBuilder.GetEmailBody(
-				"https://res.cloudinary.com/eslamayman741/image/upload/v1710854576/icon-positive-vote-1_rdexez_usxfxp.svg",
+                "https://res.cloudinary.com/eslamayman741/image/upload/v1711053269/icon-positive-vote-1_nvd6xb_ywlwdp.png",
 						$"Hey {user.FullName}, thanks for joining us!",
 						"please confirm your email",
 						$"{HtmlEncoder.Default.Encode(callbackUrl!)}",
