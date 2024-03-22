@@ -57,6 +57,23 @@ namespace Bookify.Web.Controllers
 
             return RedirectToAction(nameof(Index), new { id = Subscriber.Id });
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Search(SearchFormViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var subscriber = _context.Subscribers
+                            .SingleOrDefault(s =>
+                                    s.Email == model.Value
+                                || s.NationalId == model.Value
+                                || s.MobileNumber == model.Value);
+
+            var viewModel = _mapper.Map<SubscriberSearchResultViewModel>(subscriber);
+
+            return PartialView("_Result", viewModel);
+        }
         public IActionResult Edit(int id)
         {
             var subscriper = _context.Subscribers
@@ -114,6 +131,20 @@ namespace Bookify.Web.Controllers
             _context.SaveChanges();
 
             return RedirectToAction(nameof(Index), new { id = subscriber.Id });
+        }
+
+        [HttpGet]
+        public IActionResult Details(int id)
+        {
+            var subscriber = _context.Subscribers
+                .Include(g => g.Governorate)
+                .Include(a => a.Area)
+                .SingleOrDefault(s => s.Id == id);
+            if (subscriber is null)
+                return NotFound();
+
+            var viewModel = _mapper.Map<SubscriberViewModel>(subscriber);
+            return View(viewModel);
         }
         [AjaxOnly]
 		public IActionResult GetAreas(int governorateId)
