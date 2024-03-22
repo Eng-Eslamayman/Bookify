@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Bookify.Web.Core.Models;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Bookify.Web.Controllers
@@ -6,17 +8,19 @@ namespace Bookify.Web.Controllers
 	public class SubscribersController : Controller
 	{
 		readonly ApplicationDbContext _context;
+        readonly IDataProtector _dataProtector;
         readonly IMapper _mapper;
         readonly IImageService _imageService;
 
-        public SubscribersController(ApplicationDbContext context, IMapper mapper, IImageService imageService)
-        {
-            _context = context;
-            _mapper = mapper;
-            _imageService = imageService;
-        }
+		public SubscribersController(ApplicationDbContext context, IDataProtectionProvider dataProtector ,IMapper mapper, IImageService imageService)
+		{
+			_context = context;
+			_dataProtector = dataProtector.CreateProtector("MySecureKey");
+			_mapper = mapper;
+			_imageService = imageService;
+		}
 
-        public IActionResult Index()
+		public IActionResult Index()
 		{
 			return View();
 		}
@@ -33,7 +37,7 @@ namespace Bookify.Web.Controllers
             if (!ModelState.IsValid)
                 return View("Form", PopulateViewModel(model));
 
-            var Subscriber = _mapper.Map<Subscriber>(model);
+            var subscriber = _mapper.Map<Subscriber>(model);
 
             var imageName = $"{Guid.NewGuid()}{Path.GetExtension(model.Image.FileName)}";
             var imagePath = "/images/subscribers";
@@ -46,16 +50,17 @@ namespace Bookify.Web.Controllers
                 return View("Form", PopulateViewModel(model));
             }
 
-            Subscriber.ImageUrl = $"{imagePath}/{imageName}";
-            Subscriber.ImageThumbnailUrl = $"{imagePath}/thumb/{imageName}";
-            Subscriber.CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+            subscriber.ImageUrl = $"{imagePath}/{imageName}";
+            subscriber.ImageThumbnailUrl = $"{imagePath}/thumb/{imageName}";
+            subscriber.CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
 
-            _context.Add(Subscriber);
+            _context.Add(subscriber);
             _context.SaveChanges();
 
-            //TODO: Send welcome email
+			//TODO: Send welcome email
+			var subscriberId = _dataProtector.Protect(subscriber.Id.ToString());
 
-            return RedirectToAction(nameof(Index), new { id = Subscriber.Id });
+			return RedirectToAction(nameof(Details), new { id = subscriberId });
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -72,18 +77,23 @@ namespace Bookify.Web.Controllers
 
             var viewModel = _mapper.Map<SubscriberSearchResultViewModel>(subscriber);
 
+            if (subscriber is not null)
+                viewModel.Key = _dataProtector.Protect(subscriber.Id.ToString());
+
             return PartialView("_Result", viewModel);
         }
-        public IActionResult Edit(int id)
+        public IActionResult Edit(string id)
         {
-            var subscriper = _context.Subscribers
-                .SingleOrDefault(s => s.Id == id);
+            var subscriberId = int.Parse(_dataProtector.Unprotect(id));
+            var subscriber = _context.Subscribers
+                .Find(subscriberId);
 
-            if (subscriper is null)
+            if (subscriber is null)
                 return NotFound();
 
-            var model = _mapper.Map<SubscriberFormViewModel>(subscriper);
+            var model = _mapper.Map<SubscriberFormViewModel>(subscriber);
             var viewModel = PopulateViewModel(model);
+            viewModel.Key = id;
 
             return View("Form", viewModel);
         }
@@ -94,7 +104,9 @@ namespace Bookify.Web.Controllers
             if(!ModelState.IsValid)
                 return View("Form",PopulateViewModel(model));
 
-            var subscriber = _context.Subscribers.Find(model.Id);
+            var subscriberId = int.Parse(_dataProtector.Unprotect(model.Key));
+
+            var subscriber = _context.Subscribers.Find(subscriberId);
             if (subscriber is null)
                 return NotFound();
 
@@ -130,20 +142,23 @@ namespace Bookify.Web.Controllers
 
             _context.SaveChanges();
 
-            return RedirectToAction(nameof(Index), new { id = subscriber.Id });
+            return RedirectToAction(nameof(Details), new { id = model.Key });
         }
 
         [HttpGet]
-        public IActionResult Details(int id)
+        public IActionResult Details(string id)
         {
-            var subscriber = _context.Subscribers
+            var subscriberId = int.Parse(_dataProtector.Unprotect(id));
+
+			var subscriber = _context.Subscribers
                 .Include(g => g.Governorate)
                 .Include(a => a.Area)
-                .SingleOrDefault(s => s.Id == id);
+                .SingleOrDefault(s => s.Id == subscriberId);
             if (subscriber is null)
                 return NotFound();
 
             var viewModel = _mapper.Map<SubscriberViewModel>(subscriber);
+            viewModel.Key = id;
             return View(viewModel);
         }
         [AjaxOnly]
@@ -161,24 +176,36 @@ namespace Bookify.Web.Controllers
 		}
         public IActionResult AllowNationalId(SubscriberFormViewModel model)
         {
-            var Subscriber = _context.Subscribers.SingleOrDefault(b => b.NationalId == model.NationalId);
-            var isAllowed = Subscriber is null || Subscriber.Id.Equals(model.Id);
+            var subscriberId = 0;
+            if(!string.IsNullOrEmpty(model.Key))
+                subscriberId = int.Parse(_dataProtector.Unprotect(model.Key));
+
+            var subscriber = _context.Subscribers.SingleOrDefault(b => b.NationalId == model.NationalId);
+            var isAllowed = subscriber is null || subscriber.Id.Equals(subscriberId);
 
             return Json(isAllowed);
         }
 
         public IActionResult AllowMobileNumber(SubscriberFormViewModel model)
         {
-            var Subscriber = _context.Subscribers.SingleOrDefault(b => b.MobileNumber == model.MobileNumber);
-            var isAllowed = Subscriber is null || Subscriber.Id.Equals(model.Id);
+            var subscriberId = 0;
+            if (!string.IsNullOrEmpty(model.Key))
+                subscriberId = int.Parse(_dataProtector.Unprotect(model.Key));
+
+            var subscriber = _context.Subscribers.SingleOrDefault(b => b.MobileNumber == model.MobileNumber);
+            var isAllowed = subscriber is null || subscriber.Id.Equals(subscriberId);
 
             return Json(isAllowed);
         }
 
         public IActionResult AllowEmail(SubscriberFormViewModel model)
         {
-            var Subscriber = _context.Subscribers.SingleOrDefault(b => b.Email == model.Email);
-            var isAllowed = Subscriber is null || Subscriber.Id.Equals(model.Id);
+            var subscriberId = 0;
+            if (!string.IsNullOrEmpty(model.Key))
+                subscriberId = int.Parse(_dataProtector.Unprotect(model.Key));
+
+            var subscriber = _context.Subscribers.SingleOrDefault(b => b.Email == model.Email);
+            var isAllowed = subscriber is null || subscriber.Id.Equals(subscriberId);
 
             return Json(isAllowed);
         }

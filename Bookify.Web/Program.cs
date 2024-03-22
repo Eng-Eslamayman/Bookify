@@ -6,6 +6,7 @@ using UoN.ExpressiveAnnotations.NetCore.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Bookify.Web.Data;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +37,8 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(MappingProfile)));
 builder.Services.AddExpressiveAnnotations();
+
+builder.Services.AddDataProtection().SetApplicationName(nameof(Bookify));
 
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection(nameof(CloudinarySettings)));
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection(nameof(MailSettings)));
