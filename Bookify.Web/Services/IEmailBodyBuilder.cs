@@ -1,7 +1,7 @@
 ﻿namespace Bookify.Web.Services
 {
-	public interface IEmailBodyBuilder
-	{
-		string GetEmailBody(string imageUrl, string header, string body, string url, string linkTitle);
-	}
+    public interface IEmailBodyBuilder
+    {
+        string GetEmailBody(string template, Dictionary<string, string> placeholders);
+    }
 }

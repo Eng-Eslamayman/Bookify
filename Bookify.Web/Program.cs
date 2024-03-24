@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Bookify.Web.Data;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.DataProtection;
+using WhatsAppCloudApi.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +43,9 @@ builder.Services.AddDataProtection().SetApplicationName(nameof(Bookify));
 
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection(nameof(CloudinarySettings)));
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection(nameof(MailSettings)));
+
+builder.Services.AddWhatsAppApiClient(builder.Configuration);
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
