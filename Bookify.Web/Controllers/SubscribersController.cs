@@ -72,13 +72,23 @@ namespace Bookify.Web.Controllers
             subscriber.ImageThumbnailUrl = $"{imagePath}/thumb/{imageName}";
             subscriber.CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
 
+            Subscription subscription = new()
+            {
+                CreatedById = subscriber.CreatedById,
+                CreatedOn = subscriber.CreatedOn,
+                StartDate = DateTime.Today,
+                EndDate = DateTime.Today.AddYears(1)
+            };
+
+            subscriber.Subscriptions.Add(subscription);
+
             _context.Add(subscriber);
             _context.SaveChanges();
 
             //Send welcome email
             var placeholders = new Dictionary<string, string>()
             {
-                { "imageUrl", "https://res.cloudinary.com/devcreed/image/upload/v1668739431/icon-positive-vote-2_jcxdww.svg" },
+                { "imageUrl", "https://res.cloudinary.com/eslamayman741/image/upload/v1711053699/icon-positive-vote-2_sgatwf_eocxqo.png" },
                 { "header", $"Welcome {model.FirstName}," },
                 { "body", "thanks for joining Bookify 🤩" }
             };
@@ -207,6 +217,7 @@ namespace Bookify.Web.Controllers
 			var subscriber = _context.Subscribers
                 .Include(g => g.Governorate)
                 .Include(a => a.Area)
+                .Include(s => s.Subscriptions)
                 .SingleOrDefault(s => s.Id == subscriberId);
             if (subscriber is null)
                 return NotFound();
@@ -214,6 +225,81 @@ namespace Bookify.Web.Controllers
             var viewModel = _mapper.Map<SubscriberViewModel>(subscriber);
             viewModel.Key = id;
             return View(viewModel);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RenewSubscription(string sKey)
+        {
+            var subscriberId = int.Parse(_dataProtector.Unprotect(sKey));
+
+            var subscriber = _context.Subscribers
+                                        .Include(s => s.Subscriptions)
+                                        .SingleOrDefault(s => s.Id == subscriberId);
+
+            if (subscriber is null)
+                return NotFound();
+
+            if (subscriber.IsBlackListed)
+                return BadRequest();
+
+            var lastSubscription = subscriber.Subscriptions.Last();
+
+            var startDate = lastSubscription.EndDate < DateTime.Today
+                            ? DateTime.Today
+                            : lastSubscription.EndDate.AddDays(1);
+
+            Subscription newSubscription = new()
+            {
+                CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value,
+                CreatedOn = DateTime.Now,
+                StartDate = startDate,
+                EndDate = startDate.AddYears(1)
+            };
+
+            subscriber.Subscriptions.Add(newSubscription);
+
+            _context.SaveChanges();
+
+            //Send email and WhatsApp Message
+            var placeholders = new Dictionary<string, string>()
+            {
+                { "imageUrl", "https://res.cloudinary.com/eslamayman741/image/upload/v1711053699/icon-positive-vote-2_sgatwf_eocxqo.png" },
+                { "header", $"Hello {subscriber.FirstName}," },
+                { "body", $"your subscription has been renewed through {newSubscription.EndDate.ToString("d MMM, yyyy")} 🎉🎉" }
+            };
+
+            var body = _emailBodyBuilder.GetEmailBody(EmailTemplates.Notification, placeholders);
+
+            await _emailSender.SendEmailAsync(
+                subscriber.Email,
+                "Bookify Subscription Renewal", body);
+
+            if (subscriber.HasWhatsApp)
+            {
+                var components = new List<WhatsAppComponent>()
+                {
+                    new WhatsAppComponent
+                    {
+                        Type = "body",
+                        Parameters = new List<object>()
+                        {
+                            new WhatsAppTextParameter { Text = subscriber.FirstName },
+                            new WhatsAppTextParameter { Text = newSubscription.EndDate.ToString("d MMM, yyyy") },
+                        }
+                    }
+                };
+
+                var mobileNumber = _webHostEnvironment.IsDevelopment() ? "Add You Number" : subscriber.MobileNumber;
+
+                //Change 2 with your country code
+                await _whatsAppClient
+                    .SendMessage($"2{mobileNumber}", WhatsAppLanguageCode.English,
+                    WhatsAppTemplates.SubscriptionRenew, components);
+            }
+
+            var viewModel = _mapper.Map<SubscriptionViewModel>(newSubscription);
+
+            return PartialView("_SubscriptionRow", viewModel);
         }
         [AjaxOnly]
 		public IActionResult GetAreas(int governorateId)
