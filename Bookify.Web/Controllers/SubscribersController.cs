@@ -1,4 +1,5 @@
 ﻿using Bookify.Web.Core.Models;
+using Hangfire;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -95,9 +96,9 @@ namespace Bookify.Web.Controllers
 
             var body = _emailBodyBuilder.GetEmailBody(EmailTemplates.Notification, placeholders);
 
-            await _emailSender.SendEmailAsync(
+            BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(
                 model.Email,
-                "Welcome to Bookify", body);
+                "Welcome to Bookify", body));
 
             //Send welcome message using WhatsApp
             if (model.HasWhatsApp)
@@ -117,9 +118,9 @@ namespace Bookify.Web.Controllers
                 var mobileNumber = _webHostEnvironment.IsDevelopment() ? "Add You Number" : model.MobileNumber;
 
                 //Change 2 with your country code
-                await _whatsAppClient
-                    .SendMessage($"2{mobileNumber}", WhatsAppLanguageCode.English_US,
-                    WhatsAppTemplates.WelcomeMessage, components);
+                BackgroundJob.Enqueue(() => _whatsAppClient
+                     .SendMessage($"2{mobileNumber}", WhatsAppLanguageCode.English_US,
+                     WhatsAppTemplates.WelcomeMessage, components));
             }
 
             var subscriberId = _dataProtector.Protect(subscriber.Id.ToString());
@@ -270,9 +271,9 @@ namespace Bookify.Web.Controllers
 
             var body = _emailBodyBuilder.GetEmailBody(EmailTemplates.Notification, placeholders);
 
-            await _emailSender.SendEmailAsync(
+            BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(
                 subscriber.Email,
-                "Bookify Subscription Renewal", body);
+                "Bookify Subscription Renewal", body));
 
             if (subscriber.HasWhatsApp)
             {
@@ -292,9 +293,9 @@ namespace Bookify.Web.Controllers
                 var mobileNumber = _webHostEnvironment.IsDevelopment() ? "Add You Number" : subscriber.MobileNumber;
 
                 //Change 2 with your country code
-                await _whatsAppClient
+                BackgroundJob.Enqueue(() => _whatsAppClient
                     .SendMessage($"2{mobileNumber}", WhatsAppLanguageCode.English,
-                    WhatsAppTemplates.SubscriptionRenew, components);
+                    WhatsAppTemplates.SubscriptionRenew, components));
             }
 
             var viewModel = _mapper.Map<SubscriptionViewModel>(newSubscription);
