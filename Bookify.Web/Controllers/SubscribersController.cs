@@ -115,7 +115,7 @@ namespace Bookify.Web.Controllers
                     }
                 };
 
-                var mobileNumber = _webHostEnvironment.IsDevelopment() ? "Add You Number" : model.MobileNumber;
+                var mobileNumber = _webHostEnvironment.IsDevelopment() ? "201029249874" : model.MobileNumber;
 
                 //Change 2 with your country code
                 BackgroundJob.Enqueue(() => _whatsAppClient
@@ -219,6 +219,8 @@ namespace Bookify.Web.Controllers
                 .Include(g => g.Governorate)
                 .Include(a => a.Area)
                 .Include(s => s.Subscriptions)
+                .Include(s => s.Rentals)
+                .ThenInclude(r => r.RentalCopies)
                 .SingleOrDefault(s => s.Id == subscriberId);
             if (subscriber is null)
                 return NotFound();
@@ -229,7 +231,7 @@ namespace Bookify.Web.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RenewSubscription(string sKey)
+        public IActionResult RenewSubscription(string sKey)
         {
             var subscriberId = int.Parse(_dataProtector.Unprotect(sKey));
 
@@ -290,7 +292,7 @@ namespace Bookify.Web.Controllers
                     }
                 };
 
-                var mobileNumber = _webHostEnvironment.IsDevelopment() ? "Add You Number" : subscriber.MobileNumber;
+                var mobileNumber = _webHostEnvironment.IsDevelopment() ? "201029249874" : subscriber.MobileNumber;
 
                 //Change 2 with your country code
                 BackgroundJob.Enqueue(() => _whatsAppClient

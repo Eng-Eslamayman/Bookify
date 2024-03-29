@@ -292,10 +292,10 @@ $(document).ready(function () {
                             '__RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
                         },
                         success: function () {
-                            showSuccessMessage();
+                            ShowSuccessMessage();
                         },
                         error: function () {
-                            showErrorMessage();
+                            ShowErrorMessage();
                         }
                     });
                 }

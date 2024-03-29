@@ -32,10 +32,10 @@
 
                             $('#CardStatus').text('Active subscriber');
                             $('#StatusBadge').removeClass('badge-light-warning').addClass('badge-light-success').text('Active subscriber');
-                            showSuccessMessage();
+                            ShowSuccessMessage();
                         },
                         error: function () {
-                            showErrorMessage();
+                            ShowErrorMessage();
                         }
                     });
                 }

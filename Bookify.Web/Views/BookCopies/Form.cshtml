@@ -5,7 +5,7 @@
       data-ajax="true"
       data-ajax-begin="onModalBegin"
       data-ajax-success="@(Model?.Id > 0 ? "onEditCopySuccess" : "onAddCopySuccess")"
-      data-ajax-failure="showErrorMessage"
+      data-ajax-failure="ShowErrorMessage"
       data-ajax-complete="onModalComplete">
 
     <input type="hidden" asp-for="BookId" />
