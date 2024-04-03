@@ -35,7 +35,7 @@
                             ShowSuccessMessage();
                         },
                         error: function () {
-                            ShowErrorMessage();
+                            showErrorMessage();
                         }
                     });
                 }

@@ -1,5 +1,5 @@
 ﻿function onAddCopySuccess(row) {
-    ShowSuccessMessage();
+    showSuccessMessage();
     $('#Modal').modal('hide');
 
     $('tbody').prepend(row);
@@ -14,7 +14,7 @@
 }
 
 function onEditCopySuccess(row) {
-    ShowSuccessMessage();
+    showSuccessMessage();
     $('#Modal').modal('hide');
 
     $(updatedRow).replaceWith(row);

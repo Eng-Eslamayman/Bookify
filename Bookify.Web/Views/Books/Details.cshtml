@@ -207,6 +207,7 @@
                             <th>Rental?</th>
                             <th>Status</th>
                             <th>Created On</th>
+                            <th>Rental History</th>
                             <th class="text-end">Actions</th>
                         </tr>
                     </thead>
@@ -226,12 +227,12 @@
 <input type="hidden" name="__RequestVerificationToken" value="@antiforgery.GetAndStoreTokens(Context).RequestToken" />
 
 @section Plugins
-    {
+{
     <script src="~/assets/plugins/fslightbox/fslightbox.bundle.js"></script>
 }
 
 @section Scripts
-    {
+{
     <partial name="_ValidationScriptsPartial" />
     <script src="~/js/books-details.js" asp-append-version="true"></script>
 }

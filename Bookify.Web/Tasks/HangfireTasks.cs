@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.UI.Services;
-using WhatsAppCloudApi;
 using WhatsAppCloudApi.Services;
+using WhatsAppCloudApi;
 
 
 namespace Bookify.Web.Tasks
@@ -40,7 +40,7 @@ namespace Bookify.Web.Tasks
                 //Send email and WhatsApp Message
                 var placeholders = new Dictionary<string, string>()
                 {
-                    { "imageUrl", "https://res.cloudinary.com/eslamayman741/image/upload/v1711466008/calendar_zfohjc_x1skgn.png" },
+                    { "imageUrl", "https://res.cloudinary.com/devcreed/image/upload/v1671062674/calendar_zfohjc.png" },
                     { "header", $"Hello {subscriber.FirstName}," },
                     { "body", $"your subscription will be expired by {endDate} 🙁" }
                 };
@@ -66,7 +66,7 @@ namespace Bookify.Web.Tasks
                         }
                     };
 
-                    var mobileNumber = _webHostEnvironment.IsDevelopment() ? "201029249874" : subscriber.MobileNumber;
+                    var mobileNumber = _webHostEnvironment.IsDevelopment() ? "Add Your number" : subscriber.MobileNumber;
 
                     //Change 2 with your country code
                     await _whatsAppClient
@@ -76,5 +76,45 @@ namespace Bookify.Web.Tasks
             }
         }
 
+        public async Task RentalsExpirationAlert()
+        {
+            var tomorrow = DateTime.Today.AddDays(1);
+
+            var rentals = _context.Rentals
+                    .Include(r => r.Subscriber)
+                    .Include(r => r.RentalCopies)
+                    .ThenInclude(c => c.BookCopy)
+                    .ThenInclude(bc => bc!.Book)
+                    .Where(r => r.RentalCopies.Any(r => r.EndDate.Date == tomorrow))
+                    .ToList();
+
+            foreach (var rental in rentals)
+            {
+                var expiredCopies = rental.RentalCopies.Where(c => c.EndDate.Date == tomorrow && !c.ReturnDate.HasValue).ToList();
+
+                var message = $"your rental for the below book(s) will be expired by tomorrow {tomorrow.ToString("dd MMM, yyyy")} 💔:";
+                message += "<ul>";
+
+                foreach (var copy in expiredCopies)
+                {
+                    message += $"<li>{copy.BookCopy!.Book!.Title}</li>";
+                }
+
+                message += "</ul>";
+
+                var placeholders = new Dictionary<string, string>()
+                {
+                    { "imageUrl", "https://res.cloudinary.com/devcreed/image/upload/v1671062674/calendar_zfohjc.png" },
+                    { "header", $"Hello {rental.Subscriber!.FirstName}," },
+                    { "body", message }
+                };
+
+                var body = _emailBodyBuilder.GetEmailBody(EmailTemplates.Notification, placeholders);
+
+                await _emailSender.SendEmailAsync(
+                    rental.Subscriber!.Email,
+                    "Bookify Rental Expiration 🔔", body);
+            }
+        }
     }
 }

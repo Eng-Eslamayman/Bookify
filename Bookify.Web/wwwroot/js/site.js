@@ -1,11 +1,12 @@
-﻿var updatedRow;
-var table;
+﻿var table;
 var datatable;
+var updatedRow;
 var exportedCols = [];
-function ShowSuccessMessage(message = "Saved successfully!") {
+
+function showSuccessMessage(message = 'Saved successfully!') {
     Swal.fire({
-        icon: "success",
-        title: "Good Job",
+        icon: 'success',
+        title: 'Good Job',
         text: message,
         customClass: {
             confirmButton: "btn btn-primary"
@@ -13,16 +14,29 @@ function ShowSuccessMessage(message = "Saved successfully!") {
     });
 }
 
-function disableSubmitButton() {
-    $('body:submit').attr('disabled', 'disabled').attr('data-kt-indicator', 'on');
+function showErrorMessage(message = 'Something went wrong!') {
+    Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: message.responseText !== undefined ? message.responseText : message,
+        customClass: {
+            confirmButton: "btn btn-primary"
+        }
+    });
+}
 
+function disableSubmitButton(btn) {
+    $(btn).attr('disabled', 'disabled').attr('data-kt-indicator', 'on');
 }
+
 function onModalBegin() {
-    disableSubmitButton();
+    disableSubmitButton($('#Modal').find(':submit'));
 }
+
 function onModalSuccess(row) {
-    ShowSuccessMessage();
+    showSuccessMessage();
     $('#Modal').modal('hide');
+
     if (updatedRow !== undefined) {
         datatable.row(updatedRow).remove().draw();
         updatedRow = undefined;
@@ -30,26 +44,16 @@ function onModalSuccess(row) {
 
     var newRow = $(row);
     datatable.row.add(newRow).draw();
-
-    KTMenu.init();
-    KTMenu.initHandlers();
-}
-
-function ShowErrorMessage(message = "Something went wrong!") {
-    Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: message.responseText !== undefined ? message.responseText : message,
-    });
 }
 
 function onModalComplete() {
-    $('body:submit').removeAttr('disabled').removeAttr('data-kt-indicator');
+    $('body :submit').removeAttr('disabled').removeAttr('data-kt-indicator');
 }
 
+//Select2
 function applySelect2() {
     $('.js-select2').select2();
-    $('.js-select2').on('select2:select', function () {
+    $('.js-select2').on('select2:select', function (e) {
         $('form').not('#SignOut').validate().element('#' + $(this).attr('id'));
     });
 }
@@ -61,13 +65,13 @@ $.each(headers, function (i) {
         exportedCols.push(i);
 });
 
+// Class definition
 var KTDatatables = function () {
     // Private functions
     var initDatatable = function () {
         // Init datatable --- more info on datatables: https://datatables.net/manual/
-
         datatable = $(table).DataTable({
-            "info": false,
+            'info': false,
             'pageLength': 10,
             'drawCallback': function () {
                 KTMenu.createInstances();
@@ -152,7 +156,7 @@ var KTDatatables = function () {
 }();
 
 $(document).ready(function () {
-    //Disable Submit Button 
+    //Disable submit button
     $('form').not('#SignOut').on('submit', function () {
         if ($('.js-tinymce').length > 0) {
             $('.js-tinymce').each(function () {
@@ -164,22 +168,25 @@ $(document).ready(function () {
         }
 
         var isValid = $(this).valid();
-        if (isValid)
-            disableSubmitButton();
+        if (isValid) disableSubmitButton($(this).find(':submit'));
     });
 
     //TinyMCE
     if ($('.js-tinymce').length > 0) {
-        var options = { selector: ".js-tinymce", height: "442" };
+        var options = { selector: ".js-tinymce", height: "430" };
 
         if (KTThemeMode.getMode() === "dark") {
             options["skin"] = "oxide-dark";
             options["content_css"] = "dark";
         }
+
         tinymce.init(options);
     }
 
-    //datePicker
+    //Select2
+    applySelect2();
+
+    //Datepicker
     $('.js-datepicker').daterangepicker({
         singleDatePicker: true,
         autoApply: true,
@@ -187,29 +194,28 @@ $(document).ready(function () {
         maxDate: new Date()
     });
 
-    //Select2
-    applySelect2();
-
-    //sweetalert
+    //SweetAlert
     var message = $('#Message').text();
     if (message !== '') {
-        ShowSuccessMessage();
+        showSuccessMessage(message);
     }
 
-    //datatables 
+    //DataTables
     KTUtil.onDOMContentLoaded(function () {
         KTDatatables.init();
     });
 
+    //Handle bootstrap modal
     $('body').delegate('.js-render-modal', 'click', function () {
         var btn = $(this);
         var modal = $('#Modal');
+
         modal.find('#ModalLabel').text(btn.data('title'));
 
         if (btn.data('update') !== undefined) {
             updatedRow = btn.parents('tr');
-
         }
+
         $.get({
             url: btn.data('url'),
             success: function (form) {
@@ -218,19 +224,19 @@ $(document).ready(function () {
                 applySelect2();
             },
             error: function () {
-                ShowErrorMessage();
+                showErrorMessage();
             }
-
         });
+
         modal.modal('show');
     });
 
-    //Handle toggle status 
+    //Handle Toggle Status
     $('body').delegate('.js-toggle-status', 'click', function () {
         var btn = $(this);
 
         bootbox.confirm({
-            message: 'Are you sure that you need to toggle item status?',
+            message: "Are you sure that you need to toggle this item status?",
             buttons: {
                 confirm: {
                     label: 'Yes',
@@ -248,19 +254,18 @@ $(document).ready(function () {
                         data: {
                             '__RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
                         },
-                        success: function (LastUpdatedOn) {
+                        success: function (lastUpdatedOn) {
                             var row = btn.parents('tr');
                             var status = row.find('.js-status');
                             var newStatus = status.text().trim() === 'Deleted' ? 'Available' : 'Deleted';
-                            status.text(newStatus).toggleClass('badge-light-danger badge-light-success');
-                            row.find('.js-updated-on').html(LastUpdatedOn);
+                            status.text(newStatus).toggleClass('badge-light-success badge-light-danger');
+                            row.find('.js-updated-on').html(lastUpdatedOn);
                             row.addClass('animate__animated animate__flash');
 
-                            ShowSuccessMessage();
-
+                            showSuccessMessage();
                         },
-                        Error: function () {
-                            ShowErrorMessage();
+                        error: function () {
+                            showErrorMessage();
                         }
                     });
                 }
@@ -292,16 +297,18 @@ $(document).ready(function () {
                             '__RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
                         },
                         success: function () {
-                            ShowSuccessMessage();
+                            showSuccessMessage();
                         },
                         error: function () {
-                            ShowErrorMessage();
+                            showErrorMessage();
                         }
                     });
                 }
             }
         });
     });
+
+    //Hanlde signout
     $('.js-signout').on('click', function () {
         $('#SignOut').submit();
     });

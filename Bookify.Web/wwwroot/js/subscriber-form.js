@@ -16,7 +16,7 @@
                     });
                 },
                 error: function () {
-                    ShowErrorMessage()
+                    showErrorMessage()
                 }
             });
         }

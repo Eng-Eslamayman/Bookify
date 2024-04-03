@@ -3,8 +3,8 @@
     [Authorize(Roles = AppRoles.Archive)]
     public class BookCopiesController : Controller
     {
-        readonly ApplicationDbContext _context;
-        readonly IMapper _mapper;
+        private readonly ApplicationDbContext _context;
+        private readonly IMapper _mapper;
 
         public BookCopiesController(ApplicationDbContext context, IMapper mapper)
         {
@@ -12,10 +12,6 @@
             _mapper = mapper;
         }
 
-        public IActionResult Index()
-        {
-            return View();
-        }
         [AjaxOnly]
         public IActionResult Create(int bookId)
         {
@@ -32,6 +28,7 @@
 
             return PartialView("Form", viewModel);
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(BookCopyFormViewModel model)
@@ -47,8 +44,8 @@
             BookCopy copy = new()
             {
                 EditionNumber = model.EditionNumber,
-                LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value,
-                IsAvailableForRental = book.IsAvailableForRental && model.IsAvailableForRental
+                IsAvailableForRental = book.IsAvailableForRental && model.IsAvailableForRental,
+                CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value
             };
 
             book.Copies.Add(copy);
@@ -58,6 +55,7 @@
 
             return PartialView("_BookCopyRow", viewModel);
         }
+
         [AjaxOnly]
         public IActionResult Edit(int id)
         {
@@ -85,8 +83,8 @@
                 return NotFound();
 
             copy.EditionNumber = model.EditionNumber;
-            copy.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
             copy.IsAvailableForRental = copy.Book!.IsAvailableForRental && model.IsAvailableForRental;
+            copy.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
             copy.LastUpdatedOn = DateTime.Now;
 
             _context.SaveChanges();
@@ -94,6 +92,20 @@
             var viewModel = _mapper.Map<BookCopyViewModel>(copy);
 
             return PartialView("_BookCopyRow", viewModel);
+        }
+
+        public IActionResult RentalHistory(int id)
+        {
+            var copyHistory = _context.RentalCopies
+                .Include(c => c.Rental)
+                .ThenInclude(r => r!.Subscriber)
+                .Where(c => c.BookCopyId == id)
+                .OrderByDescending(c => c.RentalDate)
+                .ToList();
+
+            var viewModel = _mapper.Map<IEnumerable<CopyHistoryViewModel>>(copyHistory);
+
+            return View(viewModel);
         }
 
         [HttpPost]
