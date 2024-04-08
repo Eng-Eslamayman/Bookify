@@ -12,6 +12,7 @@ using Hangfire;
 using Hangfire.Dashboard;
 using WhatsAppCloudApi.Services;
 using Bookify.Web.Tasks;
+using HashidsNet;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,6 +53,8 @@ builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection(
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection(nameof(MailSettings)));
 
 builder.Services.AddWhatsAppApiClient(builder.Configuration);
+
+builder.Services.AddSingleton<IHashids>(_ => new Hashids(minHashLength: 11));
 
 builder.Services.Configure<AuthorizationOptions>(options =>
 options.AddPolicy("AdminsOnly", policy =>
