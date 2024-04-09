@@ -110,6 +110,17 @@ var KTDatatables = function () {
                     title: documentTitle,
                     exportOptions: {
                         columns: exportedCols
+                    },
+                    customize: function (doc) {
+                        pdfMake.fonts = {
+                            Arial: {
+                                normal: 'arial',
+                                bold: 'arial',
+                                italics: 'arial',
+                                bolditalics: 'arial'
+                            }
+                        }
+                        doc.defaultStyle.font = 'Arial';
                     }
                 }
             ]
