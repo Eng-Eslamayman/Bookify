@@ -13,6 +13,7 @@ using Hangfire.Dashboard;
 using WhatsAppCloudApi.Services;
 using Bookify.Web.Tasks;
 using HashidsNet;
+using ViewToHTML.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -62,6 +63,8 @@ options.AddPolicy("AdminsOnly", policy =>
     policy.RequireAuthenticatedUser();
     policy.RequireRole(AppRoles.Admin);
 }));
+
+builder.Services.AddViewToHTML();
 
 var app = builder.Build();
 
