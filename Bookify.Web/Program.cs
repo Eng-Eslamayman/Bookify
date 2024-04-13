@@ -1,7 +1,10 @@
+using Bookify.Web;
 using Bookify.Web.Seeds;
 using Bookify.Web.Tasks;
 using Hangfire;
 using Hangfire.Dashboard;
+using Infrastructure;
+using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Serilog;
@@ -11,7 +14,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddServices(builder);
+builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddWebServices(builder);
 
 //Add Serilog
 Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();

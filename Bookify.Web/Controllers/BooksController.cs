@@ -8,7 +8,7 @@ namespace Bookify.Web.Controllers
 	[Authorize(Roles = AppRoles.Archive)]
 	public class BooksController : Controller
 	{
-		readonly ApplicationDbContext _context;
+		readonly IApplicationDbContext _context;
 		readonly IMapper _mapper;
 		readonly IWebHostEnvironment _environment;
 		readonly IImageService _imageService;
@@ -17,7 +17,7 @@ namespace Bookify.Web.Controllers
 		readonly List<string> _allowedExtension = new() { ".png", ".jpeg", ".jpg" };
 		readonly int _maxAllowedMaxSize = 2097152;
 
-		public BooksController(ApplicationDbContext context, IMapper mapper
+		public BooksController(IApplicationDbContext context, IMapper mapper
 			, IWebHostEnvironment environment, IOptions<CloudinarySettings> cloudinary, IImageService imageService)
 		{
 			_context = context;

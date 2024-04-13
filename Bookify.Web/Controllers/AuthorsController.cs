@@ -3,18 +3,18 @@
 	[Authorize(Roles = AppRoles.Archive)]
 	public class AuthorsController : Controller
 	{
-		private readonly ApplicationDbContext _Context;
+		private readonly IApplicationDbContext _context;
 		private readonly IMapper _mapper;
 
-		public AuthorsController(ApplicationDbContext context, IMapper mapper)
+		public AuthorsController(IApplicationDbContext context, IMapper mapper)
 		{
-			_Context = context;
+			_context = context;
 			_mapper = mapper;
 		}
 
 		public IActionResult Index()
 		{
-			var authors = _Context.Authors.AsNoTracking().ToList();
+			var authors = _context.Authors.AsNoTracking().ToList();
 
 			var viewModel = _mapper.Map<IEnumerable<AuthorViewModel>>(authors);
 			return View(viewModel);
@@ -34,8 +34,8 @@
 
 			var author = _mapper.Map<Author>(model);
 			author.LastUpdatedById = User.GetUserId();
-			_Context.Authors.Add(author);
-			_Context.SaveChanges();
+			_context.Authors.Add(author);
+			_context.SaveChanges();
 
 			var viewModel = _mapper.Map<AuthorViewModel>(author);
 
@@ -44,7 +44,7 @@
 		[AjaxOnly]
 		public IActionResult Edit(int id)
 		{
-			var author = _Context.Authors.Find(id);
+			var author = _context.Authors.Find(id);
 			if (author is null)
 				return NotFound();
 
@@ -58,13 +58,13 @@
 			if (!ModelState.IsValid)
 				return BadRequest();
 
-			var author = _Context.Authors.Find(id);
+			var author = _context.Authors.Find(id);
 
 			author = _mapper.Map(model, author);
 			author.LastUpdatedById = User.GetUserId();
 			author.LastUpdatedOn = DateTime.Now;
 
-			_Context.SaveChanges();
+			_context.SaveChanges();
 			var viewModel = _mapper.Map<AuthorViewModel>(author);
 
 			return PartialView("_AuthorRow", viewModel);
@@ -73,7 +73,7 @@
 		[ValidateAntiForgeryToken]
 		public IActionResult ToggleStatus(int id)
 		{
-			var author = _Context.Authors.Find(id);
+			var author = _context.Authors.Find(id);
 
 			if (author is null)
 				return NotFound();
@@ -82,13 +82,13 @@
 			author.LastUpdatedById = User.GetUserId();
 			author.LastUpdatedOn = DateTime.Now;
 
-			_Context.SaveChanges();
+			_context.SaveChanges();
 
 			return Ok(author.LastUpdatedOn.ToString());
 		}
 		public IActionResult AllowItem(AuthorFormViewModel model)
 		{
-			var author = _Context.Authors.SingleOrDefault(c => c.Name == model.Name);
+			var author = _context.Authors.SingleOrDefault(c => c.Name == model.Name);
 			var isAllowed = author is null || author.Id == model.Id;
 			return Json(isAllowed);
 		}

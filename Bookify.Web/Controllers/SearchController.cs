@@ -4,11 +4,11 @@ namespace Bookify.Web.Controllers
 {
 	public class SearchController : Controller
 	{
-		readonly ApplicationDbContext _context;
+		readonly IApplicationDbContext _context;
 		readonly IMapper _mapper;
 		readonly IHashids _hashids;
 
-		public SearchController(IHashids hashids, ApplicationDbContext context, IMapper mapper)
+		public SearchController(IHashids hashids, IApplicationDbContext context, IMapper mapper)
 		{
 			_hashids = hashids;
 			_context = context;

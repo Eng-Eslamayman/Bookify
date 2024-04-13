@@ -7,7 +7,7 @@ namespace Bookify.Web.Controllers
 {
 	public class SubscribersController : Controller
 	{
-		readonly ApplicationDbContext _context;
+		readonly IApplicationDbContext _context;
 		readonly IDataProtector _dataProtector;
 		readonly IMapper _mapper;
 		readonly IWhatsAppClient _whatsAppClient;
@@ -16,7 +16,7 @@ namespace Bookify.Web.Controllers
 		readonly IEmailBodyBuilder _emailBodyBuilder;
 		readonly IEmailSender _emailSender;
 
-		public SubscribersController(ApplicationDbContext context,
+		public SubscribersController(IApplicationDbContext context,
 			IDataProtectionProvider dataProtector, IMapper mapper,
 			IWhatsAppClient whatsAppClient,
 			IWebHostEnvironment webHostEnvironment,
@@ -78,7 +78,7 @@ namespace Bookify.Web.Controllers
 
 			subscriber.Subscriptions.Add(subscription);
 
-			_context.Add(subscriber);
+			_context.Subscribers.Add(subscriber);
 			_context.SaveChanges();
 
 			//Send welcome email
