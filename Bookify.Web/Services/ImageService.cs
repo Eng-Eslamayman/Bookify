@@ -1,8 +1,4 @@
-﻿using Bookify.Web.Core.Models;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Processing;
-
-namespace Bookify.Web.Services
+﻿namespace Bookify.Web.Services
 {
 	public class ImageService : IImageService
 	{
