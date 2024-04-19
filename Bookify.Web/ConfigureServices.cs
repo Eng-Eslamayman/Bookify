@@ -1,9 +1,8 @@
 ﻿using Bookify.Web.Core.Mapping;
 using Bookify.Web.Helpers;
+using FluentValidation.AspNetCore;
 using Hangfire;
 using HashidsNet;
-using Infrastructure.Persistence;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using System.Reflection;
@@ -13,60 +12,75 @@ using WhatsAppCloudApi.Extensions;
 
 namespace Bookify.Web
 {
-    public static class ConfigureServices
-    {
-        public static IServiceCollection AddWebServices(this IServiceCollection services, WebApplicationBuilder builder)
-        {
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+	public static class DependencyInjection
+	{
+		public static IServiceCollection AddWebServices(this IServiceCollection services,
+			WebApplicationBuilder builder)
+		{
+			var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+			services.AddDbContext<ApplicationDbContext>(options =>
+				options.UseSqlServer(connectionString!));
 
+			services.AddDatabaseDeveloperPageExceptionFilter();
 
-            services.AddDatabaseDeveloperPageExceptionFilter();
+			services.AddIdentity<ApplicationUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
+				.AddEntityFrameworkStores<ApplicationDbContext>()
+				.AddDefaultUI()
+				.AddDefaultTokenProviders()
+				.AddSignInManager<SignInManager<ApplicationUser>>();
 
-            services.AddIdentity<ApplicationUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultUI()
-                .AddDefaultTokenProviders()
-                .AddSignInManager<SignInManager<ApplicationUser>>();
+			services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
 
-            services.Configure<IdentityOptions>(options =>
-            {
-                options.Password.RequiredLength = 8;
+			services.Configure<SecurityStampValidatorOptions>(options =>
+				options.ValidationInterval = TimeSpan.Zero);
 
-                options.User.RequireUniqueEmail = true;
-            });
+			services.Configure<IdentityOptions>(options =>
+			{
+				options.Password.RequiredLength = 8;
 
-            services.AddDataProtection().SetApplicationName(nameof(Bookify));
-            services.AddSingleton<IHashids>(_ => new Hashids("f1nd1ngn3m0", minHashLength: 11));
+				options.User.RequireUniqueEmail = true;
+			});
 
-            services.AddScoped<IUserClaimsPrincipalFactory<ApplicationUser>, ApplicationUserClaimsPrincipalFactory>();
+			services.AddDataProtection().SetApplicationName(nameof(Bookify));
+			services.AddSingleton<IHashids>(_ => new Hashids("f1nd1ngn3m0", minHashLength: 11));
 
-            services.AddTransient<IImageService, ImageService>();
-            services.AddTransient<IEmailSender, EmailSender>();
-            services.AddTransient<IEmailBodyBuilder, EmailBodyBuilder>();
+			services.AddScoped<IUserClaimsPrincipalFactory<ApplicationUser>, ApplicationUserClaimsPrincipalFactory>();
 
-            services.AddControllersWithViews();
+			services.AddTransient<IImageService, ImageService>();
+			services.AddTransient<IEmailSender, EmailSender>();
+			services.AddTransient<IEmailBodyBuilder, EmailBodyBuilder>();
 
-            services.AddAutoMapper(Assembly.GetAssembly(typeof(MappingProfile)));
-            services.Configure<CloudinarySettings>(builder.Configuration.GetSection(nameof(CloudinarySettings)));
-            services.Configure<MailSettings>(builder.Configuration.GetSection(nameof(MailSettings)));
+			services.AddControllersWithViews();
 
-            services.AddWhatsAppApiClient(builder.Configuration);
+			services.AddAutoMapper(Assembly.GetAssembly(typeof(MappingProfile)));
+			services.Configure<CloudinarySettings>(builder.Configuration.GetSection(nameof(CloudinarySettings)));
+			services.Configure<MailSettings>(builder.Configuration.GetSection(nameof(MailSettings)));
 
-            services.AddExpressiveAnnotations();
+			services.AddWhatsAppApiClient(builder.Configuration);
 
-            services.AddHangfire(x => x.UseSqlServerStorage(connectionString));
-            services.AddHangfireServer();
+			services.AddExpressiveAnnotations();
 
-            services.Configure<AuthorizationOptions>(options =>
-            options.AddPolicy("AdminsOnly", policy =>
-            {
-                policy.RequireAuthenticatedUser();
-                policy.RequireRole(AppRoles.Admin);
-            }));
+			services.AddHangfire(x => x.UseSqlServerStorage(connectionString));
+			services.AddHangfireServer();
 
-            services.AddViewToHTML();
+			services.Configure<AuthorizationOptions>(options =>
+			options.AddPolicy("AdminsOnly", policy =>
+			{
+				policy.RequireAuthenticatedUser();
+				policy.RequireRole(AppRoles.Admin);
+			}));
 
-            return services;
-        }
-    }
+			services.AddViewToHTML();
+
+			services.AddFluentValidationAutoValidation();
+			services.AddFluentValidationClientsideAdapters();
+			services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
+			services.AddMvc(options =>
+				options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute())
+			);
+
+			return services;
+		}
+	}
 }

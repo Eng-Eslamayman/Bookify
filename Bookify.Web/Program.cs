@@ -1,10 +1,10 @@
+using Application;
+using Infrastructure;
 using Bookify.Web;
 using Bookify.Web.Seeds;
 using Bookify.Web.Tasks;
 using Hangfire;
 using Hangfire.Dashboard;
-using Infrastructure;
-using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Serilog;
@@ -13,15 +13,24 @@ using Serilog.Context;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
-builder.Services.AddInfrastructureServices(builder.Configuration);
-builder.Services.AddWebServices(builder);
+builder.Services
+	.AddApplicationServices()
+	.AddInfrastructureServices(builder.Configuration)
+	.AddWebServices(builder);
 
 //Add Serilog
 Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
 builder.Host.UseSerilog();
 
 var app = builder.Build();
+
+
+app.Use(async (context, next) =>
+{
+	context.Response.Headers.Add("X-Frame-Options", "Deny");
+
+	await next();
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -30,27 +39,18 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-	app.UseExceptionHandler("/Home/Error");
+	app.UseStatusCodePagesWithReExecute("/Home/Error", "?statusCode={0}");
 	// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
 	app.UseHsts();
 }
 
-app.UseExceptionHandler("/Home/Error");
-
-//app.UseStatusCodePages(async statusCodeContext =>
-//{
-//	// using static System.Net.Mime.MediaTypeNames;
-//	statusCodeContext.HttpContext.Response.ContentType = System.Net.Mime.MediaTypeNames.Text.Plain;
-
-//	await statusCodeContext.HttpContext.Response.WriteAsync(
-//		$"Status Code Page: {statusCodeContext.HttpContext.Response.StatusCode}");
-//});
-
-//app.UseStatusCodePagesWithRedirects("/Home/Error/{0}");
-app.UseStatusCodePagesWithReExecute("/Home/Error", "?statusCode={0}");
-
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+//app.UseCookiePolicy(new CookiePolicyOptions
+//{
+//    Secure = CookieSecurePolicy.Always
+//});
 
 app.UseRouting();
 
@@ -78,13 +78,14 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
 	}
 });
 
-var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+var subscriberService = scope.ServiceProvider.GetRequiredService<ISubscriberService>();
+var rentalService = scope.ServiceProvider.GetRequiredService<IRentalService>();
 var webHostEnvironment = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
 var whatsAppClient = scope.ServiceProvider.GetRequiredService<IWhatsAppClient>();
 var emailBodyBuilder = scope.ServiceProvider.GetRequiredService<IEmailBodyBuilder>();
 var emailSender = scope.ServiceProvider.GetRequiredService<IEmailSender>();
 
-var hangfireTasks = new HangfireTasks(dbContext, webHostEnvironment, whatsAppClient,
+var hangfireTasks = new HangfireTasks(subscriberService, rentalService, webHostEnvironment, whatsAppClient,
 	emailBodyBuilder, emailSender);
 
 RecurringJob.AddOrUpdate(() => hangfireTasks.PrepareExpirationAlert(), "0 14 * * *");
