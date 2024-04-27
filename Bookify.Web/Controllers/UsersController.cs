@@ -77,7 +77,7 @@ namespace Bookify.Web.Controllers
 
 				var placeholders = new Dictionary<string, string>()
 				{
-					{ "imageUrl", "https://res.cloudinary.com/devcreed/image/upload/v1668732314/icon-positive-vote-1_rdexez.svg" },
+					{ "imageUrl", "https://res.cloudinary.com/eslamayman741/image/upload/v1711053269/icon-positive-vote-1_nvd6xb_ywlwdp.png" },
 					{ "header", $"Hey {user.FullName}, thanks for joining us!" },
 					{ "body", "please confirm your email" },
 					{ "url", $"{HtmlEncoder.Default.Encode(callbackUrl!)}" },

@@ -37,7 +37,7 @@ namespace Bookify.Web.Tasks
 				//Send email and WhatsApp Message
 				var placeholders = new Dictionary<string, string>()
 				{
-					{ "imageUrl", "https://res.cloudinary.com/devcreed/image/upload/v1671062674/calendar_zfohjc.png" },
+					{ "imageUrl", "https://res.cloudinary.com/eslamayman741/image/upload/v1711466008/calendar_zfohjc_x1skgn.png" },
 					{ "header", $"Hello {subscriber.FirstName}," },
 					{ "body", $"your subscription will be expired by {endDate} 🙁" }
 				};
@@ -95,7 +95,7 @@ namespace Bookify.Web.Tasks
 
 				var placeholders = new Dictionary<string, string>()
 				{
-					{ "imageUrl", "https://res.cloudinary.com/devcreed/image/upload/v1671062674/calendar_zfohjc.png" },
+					{ "imageUrl", "https://res.cloudinary.com/eslamayman741/image/upload/v1711466008/calendar_zfohjc_x1skgn.png" },
 					{ "header", $"Hello {rental.Subscriber!.FirstName}," },
 					{ "body", message }
 				};

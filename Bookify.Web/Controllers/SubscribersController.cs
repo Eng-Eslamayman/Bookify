@@ -124,7 +124,7 @@ namespace Bookify.Web.Controllers
 			//Send welcome email
 			var placeholders = new Dictionary<string, string>()
 			{
-				{ "imageUrl", "https://res.cloudinary.com/devcreed/image/upload/v1668739431/icon-positive-vote-2_jcxdww.svg" },
+				{ "imageUrl", "https://res.cloudinary.com/eslamayman741/image/upload/v1711053699/icon-positive-vote-2_sgatwf_eocxqo.png" },
 				{ "header", $"Welcome {model.FirstName}," },
 				{ "body", "thanks for joining Bookify 🤩" }
 			};
@@ -253,7 +253,7 @@ namespace Bookify.Web.Controllers
 			//Send email and WhatsApp Message
 			var placeholders = new Dictionary<string, string>()
 			{
-				{ "imageUrl", "https://res.cloudinary.com/devcreed/image/upload/v1668739431/icon-positive-vote-2_jcxdww.svg" },
+				{ "imageUrl", "https://res.cloudinary.com/eslamayman741/image/upload/v1711053699/icon-positive-vote-2_sgatwf_eocxqo.png" },
 				{ "header", $"Hello {subscriber.FirstName}," },
 				{ "body", $"your subscription has been renewed through {newSubscription.EndDate.ToString("d MMM, yyyy")} 🎉🎉" }
 			};
