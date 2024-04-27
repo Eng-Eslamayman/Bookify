@@ -105,7 +105,7 @@ body {
         flex-direction: column;
         width: 425px;
         top: 50px;
-        right: 50px;
+        right: 0;
         bottom: 50px;
         background-color: rgba(19,0,97,.3);
         border-radius: 1.75rem;
