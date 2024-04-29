@@ -1,18 +1,49 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>aspnet-Bookify.Web-d66c28b6-5f59-46c1-838a-b93d15e37622</UserSecretsId>
+    <UserSecretsId>d66c28b6-5f59-46c1-838a-b93d15e37622</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="Areas\Identity\Pages\Account\Login.cshtml.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+    <PackageReference Include="ClosedXML" Version="0.102.2" />
+    <PackageReference Include="CloudinaryDotNet" Version="1.25.1" />
+    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
+    <PackageReference Include="Hangfire" Version="1.8.11" />
+    <PackageReference Include="Hashids.net" Version="1.7.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="7.0.12" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.12" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="7.0.12" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.12" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.12" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="7.0.16" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.16" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.16">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="7.0.12" />
+    <PackageReference Include="OpenHtmlToPdf.netcore" Version="1.13.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
+    <PackageReference Include="Serilog.Sinks.MSSqlServer" Version="6.6.0" />
+    <PackageReference Include="SixLabors.ImageSharp.Web" Version="3.1.0" />
+    <PackageReference Include="UoN.ExpressiveAnnotations.NetCore" Version="1.0.0" />
+    <PackageReference Include="ViewToHTML" Version="1.0.0" />
+    <PackageReference Include="WhatsAppCloudApi" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Views\Dashboard\" />
+    <Folder Include="wwwroot\images\subscribers\thumb\" />
+    <Folder Include="wwwroot\images\users\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Application\Application.csproj" />
+    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

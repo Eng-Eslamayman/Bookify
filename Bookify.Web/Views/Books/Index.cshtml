@@ -1,0 +1,91 @@
+﻿@{
+    ViewData["Title"] = "Books";
+}
+
+
+@section Styles {
+    <link href="~/assets/plugins/datatables/datatables.bundle.css" rel="stylesheet" />
+}
+
+<div class="toolbar mb-5 mb-lg-7" id="kt_toolbar">
+    <!--begin::Page title-->
+
+    <div class="page-title d-flex flex-column me-3">
+        <!--begin::Title-->
+        <h1 class="d-flex text-gray-900 fw-bold my-1 fs-3">Books</h1>
+        <!--end::Title-->
+        <!--begin::Breadcrumb-->
+        <ul class="breadcrumb breadcrumb-dot fw-semibold text-gray-600 fs-7 my-1">
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-gray-600">
+                <a href="index.html" class="text-gray-600 text-hover-primary">Home</a>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-gray-600">Dashboards</li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-gray-500">Books</li>
+            <!--end::Item-->
+        </ul>
+        <!--end::Breadcrumb-->
+    </div>
+    <!--end::Page title-->
+    <!--begin::Actions-->
+    <div class="d-flex align-items-center py-2 py-md-1">
+        <!--begin::Button-->
+        <a asp-action="Create" class="btn btn-primary fw-bold">Create</a>
+        <!--end::Button-->
+    </div>
+    <!--end::Actions-->
+</div>
+
+
+<div class="card shadow-sm">
+    <div class="card-header align-items-center py-5 gap-2 gap-md-5">
+        <div class="card-title">
+
+            <div class="d-flex align-items-center position-relative my-1">
+                <span class="svg-icon svg-icon-1 position-absolute ms-4">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect opacity="0.5" x="17.0365" y="15.1223" width="8.15546" height="2" rx="1" transform="rotate(45 17.0365 15.1223)" fill="currentColor" />
+                        <path d="M11 19C6.55556 19 3 15.4444 3 11C3 6.55556 6.55556 3 11 3C15.4444 3 19 6.55556 19 11C19 15.4444 15.4444 19 11 19ZM11 5C7.53333 5 5 7.53333 5 11C5 14.4667 7.53333 17 11 17C14.4667 17 17 14.4667 17 11C17 7.53333 14.4667 5 11 5Z" fill="currentColor" />
+                    </svg>
+                </span>
+                <input type="text" data-kt-filter="search" class="form-control form-control-solid w-250px ps-14" placeholder="Search by title or author..." />
+            </div>
+        </div>
+    </div>    <div class="card-body pt-0">
+        <div class="table-responsive">
+            <table id="Books" class="table table-row-bordered gy-4 align-middle">
+                <thead>
+                    <tr class="fw-bold fs-6 text-gray-800">
+                        <th class="d-none"></th>
+                        <th>Book</th>
+                        <th>Publisher</th>
+                        <th>Publishing Date</th>
+                        <th>Hall</th>
+                        @* <th>Categories</th>  *@
+                        <th>Rentel</th>
+                        <th>Status</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@Html.AntiForgeryToken()
+
+@section Plugins {
+    <script src="~/assets/plugins/datatables/datatables.bundle.js"></script>
+    <script src="~/assets/plugins/datatables/vfs_fonts.js"></script>
+
+}
+
+@section Scripts {
+    <script src="~/js/books.js" asp-append-version="true"></script>
+}

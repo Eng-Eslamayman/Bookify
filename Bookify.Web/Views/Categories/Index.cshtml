@@ -1,0 +1,79 @@
+﻿@model IEnumerable<CategoryViewModel>
+
+@{
+    ViewData["Title"] = "Categories";
+
+}
+
+@section Styles {
+    <link href="~/assets/plugins/datatables/datatables.bundle.css" rel="stylesheet" />
+}
+
+<div class="toolbar mb-5 mb-lg-7" id="kt_toolbar">
+	<!--begin::Page title-->
+
+	<div class="page-title d-flex flex-column me-3">
+		<!--begin::Title-->
+		<h1 class="d-flex text-gray-900 fw-bold my-1 fs-3">Categories</h1>
+		<!--end::Title-->
+		<!--begin::Breadcrumb-->
+		<ul class="breadcrumb breadcrumb-dot fw-semibold text-gray-600 fs-7 my-1">
+			<!--begin::Item-->
+			<li class="breadcrumb-item text-gray-600">
+				<a href="index.html" class="text-gray-600 text-hover-primary">Home</a>
+			</li>
+			<!--end::Item-->
+			<!--begin::Item-->
+			<li class="breadcrumb-item text-gray-600">Dashboards</li>
+			<!--end::Item-->
+			<!--begin::Item-->
+			<li class="breadcrumb-item text-gray-500">Categories</li>
+			<!--end::Item-->
+		</ul>
+		<!--end::Breadcrumb-->
+	</div>
+	<!--end::Page title-->
+	<!--begin::Actions-->
+	<div class="d-flex align-items-center py-2 py-md-1">
+		<!--begin::Button-->
+        <a href="#" class="btn btn-primary fw-bold  js-render-modal" data-title="Add Category" data-url="/Categories/Create" data-bs-toggle="modal" data-bs-target="#kt_modal_create_app" id="kt_toolbar_primary_button">Create</a>
+		<!--end::Button-->
+	</div>
+	<!--end::Actions-->
+</div>
+
+<div class="card shadow-sm">
+    <partial name="_DataTablesCardHeader" />
+    <div class="card-body pt-0">
+        <div class="table-responsive">
+            <table class="table table-row-bordered gy-4 align-middle js-datatables" data-document-title="Categories">
+                <thead>
+                    <tr class="fw-bold fs-6 text-gray-800">
+                        <th>Name</th>
+                        <th>Status</th>
+                        <th>Created On</th>
+                        <th>Last Updated On</th>
+                        <th class="js-no-export text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var category in Model)
+                    {
+                        <partial name="_CategoryRow" model="@category" />
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+
+@section Plugins {
+    <script src="~/assets/plugins/datatables/datatables.bundle.js"></script>
+    <script src="~/assets/plugins/datatables/vfs_fonts.js"></script>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
