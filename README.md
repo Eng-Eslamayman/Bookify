@@ -53,6 +53,7 @@ The application is deployed to Smarter Aspnet hosting for public access. Ensure 
 - username: 11174305 
 - password: 60-dayfreetrial
 - username for login in bookiy: eslam@bookify.com
+- password: E$l123456
 
 ## GetStarted
 
