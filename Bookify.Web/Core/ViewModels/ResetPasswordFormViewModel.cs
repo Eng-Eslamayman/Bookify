@@ -2,15 +2,12 @@
 {
 	public class ResetPasswordFormViewModel
 	{
-		public string Id { get; set; } = null!;
-		[StringLength(100, ErrorMessage = Errors.MaxMinLength, MinimumLength = 8),
-		DataType(DataType.Password),
-		RegularExpression(RegexPatterns.Password, ErrorMessage = Errors.WeakPassword)]
-		public string Password { get; set; } = null!;
+		 public string Id { get; set; } = null!;
 
-		[DataType(DataType.Password),
-		Display(Name = "Confirm password"),
-		Compare("Password", ErrorMessage = Errors.ConfirmPasswordNotMatch)]
-		public string ConfirmPassword { get; set; } = null!;
+        [DataType(DataType.Password)]
+        public string Password { get; set; } = null!;
+
+        [DataType(DataType.Password), Display(Name = "Confirm password")]
+        public string ConfirmPassword { get; set; } = null!;
 	}
 }
