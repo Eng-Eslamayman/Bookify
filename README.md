@@ -49,9 +49,7 @@ The application follows the Clean Architecture pattern, emphasizing separation o
 ## Deployment
 
 The application is deployed to Smarter Aspnet hosting for public access. Ensure proper configuration and maintenance of hosting environment for optimal performance.
-- link: http://eslamayman-001-site1.itempurl.com/
-- username: 11174305 
-- password: 60-dayfreetrial
+- link: [http://bookifyapplication.runasp.net/](http://bookifyapplication.runasp.net/)
 - username for login in bookiy: eslam@bookify.com
 - password: E$l123456
 
